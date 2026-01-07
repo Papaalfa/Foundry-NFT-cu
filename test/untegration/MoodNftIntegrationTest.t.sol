@@ -7,7 +7,7 @@ import {MoodNft} from "src/MoodNft.sol";
 import {console} from "forge-std/Console.sol";
 import {DeployMoodNft} from "script/DeployMoodNft.s.sol";
 
-contract DeployMoodNftTest is Test {
+contract MoodNftIntegrationTest is Test {
     DeployMoodNft deployer;
     MoodNft public moodNft;
     address public USER = makeAddr("user");
@@ -33,5 +33,22 @@ contract DeployMoodNftTest is Test {
         moodNft.mintNft();
         console.log(moodNft.tokenURI(0));
         assertEq(moodNft.ownerOf(0), USER);
+    }
+
+    function testFlipMoodChangesTokenUri() public {
+        vm.startPrank(USER);
+        moodNft.mintNft();
+        string memory tokenUriBeforeFlip = moodNft.tokenURI(0);
+        console.log("Token URI before flip:", tokenUriBeforeFlip);
+
+        moodNft.flipMood(0);
+        string memory tokenUriAfterFlip = moodNft.tokenURI(0);
+        console.log("Token URI after flip:", tokenUriAfterFlip);
+        vm.stopPrank();
+
+        assert(
+            keccak256(abi.encodePacked(tokenUriBeforeFlip)) !=
+                keccak256(abi.encodePacked(tokenUriAfterFlip))
+        );
     }
 }
